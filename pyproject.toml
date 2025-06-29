@@ -1,0 +1,11 @@
+[tool.black]
+line-length = 79  # Или 88 по умолчанию
+
+[tool.isort]
+profile = "black"  # Для совместимости с black
+line_length = 79  # Должно совпадать с black
+
+[tool.flake8]
+max-line-length = 79
+ignore = "E203, W503"  # Часто конфликтуют с black, можно игнорировать
+max-complexity = 15     # Ограничение сложности функций
