@@ -6,8 +6,9 @@ scripts
 .gitignore
 .env
 __pycache__
+.vscode
 
 Dockerfile
 .dockerignore
-README.md
+*.md
 *.ipynb

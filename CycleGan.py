@@ -52,13 +52,10 @@ class Generator(nn.Module):
         out_features = in_features // 2
         for _ in range(2):
             model += [
-                nn.Upsample(
-                    scale_factor=2, mode="bilinear", align_corners=True
-                ),
-                nn.ReflectionPad2d(1),
-                nn.Conv2d(in_features, out_features, 3, stride=1),
-                nn.InstanceNorm2d(out_features, affine=True),
-                nn.ReLU(inplace=True),
+                nn.Conv2d(in_features, out_features * 4, kernel_size=3, padding=1),
+                nn.PixelShuffle(2),
+                nn.InstanceNorm2d(out_features),
+                nn.LeakyReLU(inplace=True)
             ]
             in_features = out_features
             out_features = in_features // 2
