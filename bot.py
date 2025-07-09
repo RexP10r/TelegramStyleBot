@@ -59,7 +59,7 @@ logging.getLogger("aiohttp.access").setLevel(logging.WARNING)
 
 logging.getLogger(__name__).setLevel(logging.DEBUG)
 
-load_dotenv("token.env")
+load_dotenv(".env")
 
 TOKEN = os.getenv("TOKEN")
 
@@ -74,14 +74,13 @@ dp = Dispatcher()
 
 class ImageStates(StatesGroup):
     waiting_for_image = State()
+    format_selection = State()
 
 
 path = "st_dicts/"
 
 sum2win_netG_A2B = Generator(device, 3, 3)
 sum2win_netG_B2A = Generator(device, 3, 3)
-hor2zeb_netG_A2B = Generator(device, 3, 3)
-hor2zeb_netG_B2A = Generator(device, 3, 3)
 
 global net_type
 
@@ -98,8 +97,6 @@ def load_model(model, filename):
 
 load_model(sum2win_netG_A2B, "sum2win_netG_A2B.pth")
 load_model(sum2win_netG_B2A, "sum2win_netG_B2A.pth")
-load_model(hor2zeb_netG_A2B, "hor2zeb_netG_A2B.pth")
-load_model(hor2zeb_netG_B2A, "hor2zeb_netG_B2A.pth")
 
 
 def convert(input_path, output_path, net):
@@ -155,8 +152,7 @@ async def instuction(callback: types.CallbackQuery):
         keyboard=[[KeyboardButton(text="Меню")]], resize_keyboard=True
     )
     await callback.message.answer(
-        "Бот делает стилизацию летних пейзажей в зимние, "
-        "из лошади в зебру и наоборот. "
+        "Бот делает стилизацию летних пейзажей в зимние и наоборот. "
         "Вам необходимо отправить фотографию размером 256x256 или\n"
         "с соотношением сторон 1:1, но тогда её размеронсть уменьшится "
         "до упомянутой выше.",
@@ -178,8 +174,8 @@ async def get_example(
     callback: types.CallbackQuery, state: FSMContext
 ):
     base_dir = "examples/"
-    ex_dirs = ["summer", "winter", "horse", "zebra"]
-    captions = ["Летний пейзаж", "Зимний пейзаж", "Лошадь", "Зебра"]
+    ex_dirs = ["summer", "winter"]
+    captions = ["Летний пейзаж", "Зимний пейзаж"]
 
     for i in range(2):
         folder_path = os.path.join(base_dir, ex_dirs[i])
@@ -226,8 +222,6 @@ async def start_image_upload(callback: types.CallbackQuery, state: FSMContext):
     buttons = [
         ("лето->зима", "sum2win"),
         ("зима->лето", "win2sum"),
-        ("лошадь->зебра", "hor2zeb"),
-        ("зебра->лошадь", "zeb2hor"),
     ]
 
     for text, callback_data in buttons:
@@ -241,14 +235,14 @@ async def start_image_upload(callback: types.CallbackQuery, state: FSMContext):
     )
 
 
-@dp.callback_query(F.data.in_(["sum2win", "win2sum", "hor2zeb", "zeb2hor"]))
+@dp.callback_query(F.data.in_(["sum2win", "win2sum"]))
 async def handle_style_choice(
     callback: types.CallbackQuery, state: FSMContext
 ):
     keyboard = ReplyKeyboardMarkup(
         keyboard=[[KeyboardButton(text="Меню")]], resize_keyboard=True
     )
-    names_list = ["sum2win", "win2sum", "hor2zeb", "zeb2hor"]
+    names_list = ["sum2win", "win2sum"]
 
     if callback.data in names_list:
         net_type = f"{callback.data}_G"
@@ -261,16 +255,27 @@ async def handle_style_choice(
     await callback.answer()
 
 
-@dp.message(ImageStates.waiting_for_image, F.photo)
+@dp.message(ImageStates.waiting_for_image, F.photo | F.document)
 async def handle_image(message: Message, state: FSMContext, bot: Bot):
     data = await state.get_data()
     net_type = data.get("net_type", "sum2win_G")
+    user_id = message.from_user.id
 
-    photo = message.photo[-1]
-    file_id = photo.file_id
+    if message.photo:
+        file_id = message.photo[-1].file_id
+        logger.info(f"Photo received from user {user_id}")
+    elif message.document:
+        mime_type = message.document.mime_type
+        if not mime_type or not mime_type.startswith('image/'):
+            await message.answer("Пожалуйста, отправьте изображение в формате JPEG, PNG и т.п.")
+            return
+        file_id = message.document.file_id
+        logger.info(f"Document image received from user {user_id}")
+    else:
+        await message.answer("Неподдерживаемый формат файла")
+        return
+    
     file = await bot.get_file(file_id)
-    logger.info(f"Image received in chat {message.chat.id}")
-
     input_path = tempfile.mktemp(suffix=".jpg")
     output_path = tempfile.mktemp(suffix=".jpg")
 
@@ -283,10 +288,6 @@ async def handle_image(message: Message, state: FSMContext, bot: Bot):
             cur_net = sum2win_netG_A2B
         elif net_type == "win2sum_G":
             cur_net = sum2win_netG_B2A
-        elif net_type == "hor2zeb_G":
-            cur_net = hor2zeb_netG_A2B
-        elif net_type == "zeb2hor_G":
-            cur_net = hor2zeb_netG_B2A
 
         loop = asyncio.get_running_loop()
         await loop.run_in_executor(
