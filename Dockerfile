@@ -20,7 +20,8 @@ RUN pip install --no-cache-dir \
     torchvision==0.22.1 \
     aiogram==3.20.0.post0 \
     pillow==11.2.1 \
-    python-dotenv
+    python-dotenv \ 
+    pytest pytest-asyncio pytest-mock
 
 WORKDIR /app
 COPY . /app

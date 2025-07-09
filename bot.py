@@ -320,7 +320,7 @@ async def handle_image(message: Message, state: FSMContext, bot: Bot):
 @dp.message(ImageStates.waiting_for_image)
 async def handle_wrong_input(message: Message):
     await message.answer(
-        'Пожалуйста, отправьте изображение или напишите "меню" '
+        'Пожалуйста, отправьте изображение или напишите "меню"'
     )
 
 
