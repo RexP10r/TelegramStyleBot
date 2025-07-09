@@ -14,7 +14,7 @@
 ## Быстрый старт
 Склонируйте репозиторий на локальное хранилище
 ```bash
-git clone https://github.com/Da47645/TelegramStyleBot.git
+git clone https://github.com/RexP10r/TelegramStyleBot.git
 ```
 Соберите докер образ
 ```bash 
