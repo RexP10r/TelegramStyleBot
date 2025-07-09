@@ -6,7 +6,7 @@ import sys
 import tempfile
 
 import torch
-from aiogram import Bot, Dispatcher, types, F
+from aiogram import Bot, Dispatcher, F, types
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.exceptions import TelegramAPIError
@@ -170,9 +170,7 @@ async def instuction(callback: types.CallbackQuery):
 
 
 @dp.callback_query(F.data == "example")
-async def get_example(
-    callback: types.CallbackQuery, state: FSMContext
-):
+async def get_example(callback: types.CallbackQuery, state: FSMContext):
     base_dir = "examples/"
     ex_dirs = ["summer", "winter"]
     captions = ["Летний пейзаж", "Зимний пейзаж"]
@@ -266,15 +264,17 @@ async def handle_image(message: Message, state: FSMContext, bot: Bot):
         logger.info(f"Photo received from user {user_id}")
     elif message.document:
         mime_type = message.document.mime_type
-        if not mime_type or not mime_type.startswith('image/'):
-            await message.answer("Пожалуйста, отправьте изображение в формате JPEG, PNG и т.п.")
+        if not mime_type or not mime_type.startswith("image/"):
+            await message.answer(
+                "Пожалуйста, отправьте изображение в формате JPEG, PNG и т.п."
+            )
             return
         file_id = message.document.file_id
         logger.info(f"Document image received from user {user_id}")
     else:
         await message.answer("Неподдерживаемый формат файла")
         return
-    
+
     file = await bot.get_file(file_id)
     input_path = tempfile.mktemp(suffix=".jpg")
     output_path = tempfile.mktemp(suffix=".jpg")

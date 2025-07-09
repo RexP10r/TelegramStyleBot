@@ -6,11 +6,12 @@
 - [Эксперименты](EXPERIMENTS.md)
 
 ## Результаты
-| real img | generated img |
-|----------|---------------|
-|img       | iffisd        |
+|реальное изображение|сгенерированное|
+|-|-|
+|![](imgs/final1-1.jpg)|![](imgs/final1-2.jpg)|
+|![](imgs/final2-1.jpg)|![](imgs/final2-2.jpg)|
 
-## Quick start
+## Быстрый старт
 Склонируйте репозиторий на локальное хранилище
 ```bash
 git clone https://github.com/Da47645/TelegramStyleBot.git
