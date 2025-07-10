@@ -20,11 +20,7 @@ from aiogram.types import (
     ReplyKeyboardMarkup,
     ReplyKeyboardRemove,
 )
-from aiogram.utils.formatting import (
-    Bold,
-    as_list,
-    as_marked_section,
-)
+from aiogram.utils.formatting import Bold, as_list, as_marked_section
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.utils.token import TokenValidationError
 from dotenv import load_dotenv

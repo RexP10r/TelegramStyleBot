@@ -3,19 +3,15 @@ import torch.nn.functional as F
 
 
 class ResidualBlock(nn.Module):
-    def __init__(self, in_features):
+    def __init__(self, h_size):
         super(ResidualBlock, self).__init__()
 
         conv_block = [
-            nn.Conv2d(
-                in_features, in_features, 3, padding=1, padding_mode="reflect"
-            ),
-            nn.InstanceNorm2d(in_features),
+            nn.Conv2d(h_size, h_size, 3, padding=1, padding_mode="reflect"),
+            nn.InstanceNorm2d(h_size),
             nn.ReLU(inplace=True),
-            nn.Conv2d(
-                in_features, in_features, 3, padding=1, padding_mode="reflect"
-            ),
-            nn.InstanceNorm2d(in_features),
+            nn.Conv2d(h_size, h_size, 3, padding=1, padding_mode="reflect"),
+            nn.InstanceNorm2d(h_size),
             nn.ReLU(inplace=True),
         ]
 
@@ -47,25 +43,25 @@ class Generator(nn.Module):
             nn.ReLU(inplace=True),
         ]
 
-        in_features = hidden_size
-        out_features = in_features * 2
+        h_size = hidden_size
+        out_features = h_size * 2
         for _ in range(n_du_samples):
             model += [
-                nn.Conv2d(in_features, out_features, 3, stride=2, padding=1),
+                nn.Conv2d(h_size, out_features, 3, stride=2, padding=1),
                 nn.InstanceNorm2d(out_features),
                 nn.ReLU(inplace=True),
             ]
-            in_features = out_features
-            out_features = in_features * 2
+            h_size = out_features
+            out_features = h_size * 2
 
         for _ in range(n_residual_blocks):
-            model += [ResidualBlock(in_features)]
+            model += [ResidualBlock(h_size)]
 
-        out_features = in_features // 2
+        out_features = h_size // 2
         for idx in range(n_du_samples):
             upsample_block = [
                 nn.Conv2d(
-                    in_features,
+                    h_size,
                     out_features * 4,
                     kernel_size=3,
                     padding=1,
@@ -73,7 +69,7 @@ class Generator(nn.Module):
                 ),
                 nn.PixelShuffle(2),
                 # nn.ConvTranspose2d(
-                # in_features,
+                # h_size,
                 # out_features,
                 # 3,
                 # stride=2,
@@ -85,8 +81,8 @@ class Generator(nn.Module):
             ]
 
             model += upsample_block
-            in_features = out_features
-            out_features = in_features // 2
+            h_size = out_features
+            out_features = h_size // 2
 
         model += [
             nn.Conv2d(

@@ -15,18 +15,21 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN python3 -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
-RUN pip install --no-cache-dir \
-    torch==2.7.1 \
-    torchvision==0.22.1 \
-    aiogram==3.20.0.post0 \
-    pillow==11.2.1 \
-    python-dotenv \ 
-    pytest pytest-asyncio pytest-mock
+COPY requirements.txt /tmp/  
+RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
 WORKDIR /app
 COPY . /app
 
 ENV PYTHONUTF8=1
 ENV PYTHONUNBUFFERED=1
+
+RUN if [ -f "setup.py" ] || [ -f "requirements.txt" ]; then \
+    black --check --diff . || true; \
+    isort --check-only --diff . || true; \
+    flake8 || true; \
+    fi
+
+RUN [ -f "test_bot.py" ] && pytest test_bot.py || echo "No tests found"
 
 CMD ["python", "./bot.py"]
