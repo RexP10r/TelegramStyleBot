@@ -15,20 +15,20 @@
 Склонируйте репозиторий на локальное хранилище
 ```bash
 git clone https://github.com/RexP10r/TelegramStyleBot.git
+cd TelegramStyleBot
 ```
-Соберите докер образ
+Соберите докер  (6.29 гб)
 ```bash 
 docker build -t my-bot .
 ```
-Запуск
+Запуск передачей токена через переменную окружения:
 ```bash
 docker run -d -e TOKEN="your_bot_token" --name my-bot my-bot
 ```
-Или создайте `.env` файл с токеном вашего бота
+Запуск через .env файл (создайте в корне проекта):
 ```
-TOKEN=your_token
+TOKEN=your_token    # содержимое .env файла
 ```
-Тогда команда будет такой
 ```bash
 docker run -d --name my-bot my-bot
 ```
