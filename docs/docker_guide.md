@@ -1,4 +1,3 @@
-## Little guide
 ```bash
 # Логи в реальном времени
 docker logs -f my-bot
